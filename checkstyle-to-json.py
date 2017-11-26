@@ -31,7 +31,7 @@ args = parser.parse_args()
 # Get n-th line context from file
 ##
 def get_context(filepath, n, before=3, after=3):
-    lines = []
+    lines = {}
 
     skip = max(0, n - before)
     before = n - skip
@@ -42,8 +42,8 @@ def get_context(filepath, n, before=3, after=3):
             handle.readline()
 
         # Read the context
-        for _ in repeat(None, before + after + 1):
-            lines.append(handle.readline())
+        for i in range(1, before + after + 2):
+            lines[skip + i] = (handle.readline())
 
     return lines
 

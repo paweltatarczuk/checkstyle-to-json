@@ -35,7 +35,9 @@ To convert 'report.checkstyle.xml' file to JSON and store the result in 'report.
             "line": "line in file",
             "column": "column in line",
             "message": "rule message",
-            "context": ["array of of lines from file around the error..."],
+            "context": {
+                "line-no": "array of of lines from file around the error..."
+            }
         }
     ]
 }
