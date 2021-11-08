@@ -67,9 +67,13 @@ for fileElement in ElementTree.parse(args.source).getroot():
           column = int(errorElement.attrib['column'])
         else:
           column = 0
+        if "source" in errorElement.attrib:
+          source = errorElement.attrib['source']
+        else:
+          source = ""
         items.append({
             'severity': errorElement.attrib['severity'],
-#            'source': errorElement.attrib['source'],
+            'source': source,
             'line': line,
             'column': column,
             'message': errorElement.attrib['message'],
