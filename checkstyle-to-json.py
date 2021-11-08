@@ -59,12 +59,19 @@ for fileElement in ElementTree.parse(args.source).getroot():
 
     # Iterate over all errors
     for errorElement in fileElement:
-        line = int(errorElement.attrib['line'])
+        if "line" in errorElement.attrib:
+          line = int(errorElement.attrib['line'])
+        else:
+          line = 0
+        if "column" in errorElement.attrib:
+          column = int(errorElement.attrib['column'])
+        else:
+          column = 0
         items.append({
             'severity': errorElement.attrib['severity'],
             'source': errorElement.attrib['source'],
             'line': line,
-            'column': errorElement.attrib['column'],
+            'column': column,
             'message': errorElement.attrib['message'],
             'context': get_context(filepath, line,
                 before=args.before, after=args.after),
