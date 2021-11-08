@@ -69,7 +69,7 @@ for fileElement in ElementTree.parse(args.source).getroot():
           column = 0
         items.append({
             'severity': errorElement.attrib['severity'],
-            'source': errorElement.attrib['source'],
+#            'source': errorElement.attrib['source'],
             'line': line,
             'column': column,
             'message': errorElement.attrib['message'],
