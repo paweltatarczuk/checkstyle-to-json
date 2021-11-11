@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import json
+import hashlib
 import sys
 from argparse import ArgumentParser, FileType
 from itertools import repeat
@@ -24,6 +25,12 @@ parser.add_argument(
     type=int,
     default=3,
     help='Amount of lines after used for file context fetch'
+)
+parser.add_argument(
+    '-G', '--gitlab',
+    dest='gitlab',
+    action='store_true',
+    help='produce gitlab-ci compatible codeclimate-like JSON file'
 )
 args = parser.parse_args()
 
@@ -71,16 +78,40 @@ for fileElement in ElementTree.parse(args.source).getroot():
           source = errorElement.attrib['source']
         else:
           source = ""
-        items.append({
-            'severity': errorElement.attrib['severity'],
-            'source': source,
-            'line': line,
-            'column': column,
-            'message': errorElement.attrib['message'],
-            'context': get_context(filepath, line,
-                before=args.before, after=args.after),
-        })
-
+        
+        # https://github.com/codeclimate/platform/blob/master/spec/analyzers/SPEC.md
+        if args.gitlab:
+            item = {
+                'severity': 'info',
+                'categories': 'Style',
+                'content': {
+                    'body': '```java\n' + '\n'.join(get_context(filepath, line, # should be sorted already
+                      before=args.before, after=args.after).values()) + '\n```\n'
+                },
+                'location': {
+                    'path': filepath,
+                    'lines': {
+                        'begin': line,
+                    },
+                },
+                'description': errorElement.attrib['message'],
+                'check_name':
+                  source.split('.')[-1],
+            }
+            fingerprint = hashlib.md5(
+                json.dumps(item, sort_keys=True).encode('utf-8')).hexdigest()
+            item['fingerprint'] = fingerprint
+            items.append(item)
+        else:
+            items.append({
+                'severity': errorElement.attrib['severity'],
+                'source': source,
+                'line': line,
+                'column': column,
+                'message': errorElement.attrib['message'],
+                'context': get_context(filepath, line,
+                    before=args.before, after=args.after),
+            })
     files[filepath] = items
 
 # Print gathered files in json format
