@@ -56,6 +56,7 @@ def get_context(filepath, n, before=3, after=3):
 
 # Gathered files data
 files = {}
+all_items = []
 
 # Iterate over all files
 for fileElement in ElementTree.parse(args.source).getroot():
@@ -113,8 +114,15 @@ for fileElement in ElementTree.parse(args.source).getroot():
                     before=args.before, after=args.after),
             })
     files[filepath] = items
+    all_items = all_items + items
 
-# Print gathered files in json format
-args.dest.write(
-    json.dumps(files, indent=4, sort_keys=False)
-)
+if args.gitlab:
+  # Print gathered files in json format
+  args.dest.write(
+      json.dumps(all_items, indent=4, sort_keys=False)
+  )
+else:
+  # Print gathered files in json format
+  args.dest.write(
+      json.dumps(files, indent=4, sort_keys=False)
+  )
