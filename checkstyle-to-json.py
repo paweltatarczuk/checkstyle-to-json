@@ -3,6 +3,7 @@
 import json
 import hashlib
 import sys
+import os
 from argparse import ArgumentParser, FileType
 from itertools import repeat
 from xml.etree import ElementTree
@@ -82,6 +83,7 @@ for fileElement in ElementTree.parse(args.source).getroot():
         
         # https://github.com/codeclimate/platform/blob/master/spec/analyzers/SPEC.md
         if args.gitlab:
+            fp_rel = os.path.relpath(filepath)
             item = {
                 'severity': 'info',
                 'categories': 'Style',
@@ -90,7 +92,7 @@ for fileElement in ElementTree.parse(args.source).getroot():
                       before=args.before, after=args.after).values()) + '\n```\n'
                 },
                 'location': {
-                    'path': filepath,
+                    'path': fp_rel,
                     'lines': {
                         'begin': line,
                     },
