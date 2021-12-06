@@ -29,7 +29,7 @@ To convert 'report.checkstyle.xml' file to JSON and store the result in 'report.
 
 ### Standard
 
-```
+```json
 {
     "path/to/file": [
         {
@@ -50,6 +50,7 @@ To convert 'report.checkstyle.xml' file to JSON and store the result in 'report.
 
 see https://docs.gitlab.com/ee/user/project/merge_requests/code_quality.html#implementing-a-custom-tool
 
+```json
 [
   {
     "description": "a description",
@@ -63,3 +64,4 @@ see https://docs.gitlab.com/ee/user/project/merge_requests/code_quality.html#imp
     }
   }
 ]
+```
