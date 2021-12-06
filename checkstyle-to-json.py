@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import json
+import hashlib
 import sys
+import os
 from argparse import ArgumentParser, FileType
 from itertools import repeat
 from xml.etree import ElementTree
@@ -24,6 +26,12 @@ parser.add_argument(
     type=int,
     default=3,
     help='Amount of lines after used for file context fetch'
+)
+parser.add_argument(
+    '-G', '--gitlab',
+    dest='gitlab',
+    action='store_true',
+    help='produce gitlab-ci compatible codeclimate-like JSON file'
 )
 args = parser.parse_args()
 
@@ -49,6 +57,7 @@ def get_context(filepath, n, before=3, after=3):
 
 # Gathered files data
 files = {}
+all_items = []
 
 # Iterate over all files
 for fileElement in ElementTree.parse(args.source).getroot():
@@ -59,20 +68,63 @@ for fileElement in ElementTree.parse(args.source).getroot():
 
     # Iterate over all errors
     for errorElement in fileElement:
-        line = int(errorElement.attrib['line'])
-        items.append({
-            'severity': errorElement.attrib['severity'],
-            'source': errorElement.attrib['source'],
-            'line': line,
-            'column': errorElement.attrib['column'],
-            'message': errorElement.attrib['message'],
-            'context': get_context(filepath, line,
-                before=args.before, after=args.after),
-        })
-
+        if "line" in errorElement.attrib:
+          line = int(errorElement.attrib['line'])
+        else:
+          line = 0
+        if "column" in errorElement.attrib:
+          column = int(errorElement.attrib['column'])
+        else:
+          column = 0
+        if "source" in errorElement.attrib:
+          source = errorElement.attrib['source']
+        else:
+          source = ""
+        
+        # https://github.com/codeclimate/platform/blob/master/spec/analyzers/SPEC.md
+        if args.gitlab:
+            fp_rel = os.path.relpath(filepath)
+            item = {
+                'severity': 'info',
+                'categories': 'Style',
+                'content': {
+                    'body': '```java\n' + '\n'.join(get_context(filepath, line, # should be sorted already
+                      before=args.before, after=args.after).values()) + '\n```\n'
+                },
+                'location': {
+                    'path': fp_rel,
+                    'lines': {
+                        'begin': line,
+                    },
+                },
+                'description': errorElement.attrib['message'],
+                'check_name':
+                  source.split('.')[-1],
+            }
+            fingerprint = hashlib.md5(
+                json.dumps(item, sort_keys=True).encode('utf-8')).hexdigest()
+            item['fingerprint'] = fingerprint
+            items.append(item)
+        else:
+            items.append({
+                'severity': errorElement.attrib['severity'],
+                'source': source,
+                'line': line,
+                'column': column,
+                'message': errorElement.attrib['message'],
+                'context': get_context(filepath, line,
+                    before=args.before, after=args.after),
+            })
     files[filepath] = items
+    all_items = all_items + items
 
-# Print gathered files in json format
-args.dest.write(
-    json.dumps(files, indent=4, sort_keys=False)
-)
+if args.gitlab:
+  # Print gathered files in json format
+  args.dest.write(
+      json.dumps(all_items, indent=4, sort_keys=False)
+  )
+else:
+  # Print gathered files in json format
+  args.dest.write(
+      json.dumps(files, indent=4, sort_keys=False)
+  )
