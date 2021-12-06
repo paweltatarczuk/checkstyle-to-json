@@ -57,7 +57,7 @@ see https://docs.gitlab.com/ee/user/project/merge_requests/code_quality.html#imp
     "fingerprint": "a checksum to (re-)identify issues",
     "severity": "severity: info, minor, major, critical, or blocker",
     "location": {
-      "path": "file/with_issue.R",
+      "path": "file/with_issue.java",
       "lines": {
         "begin": 42
       }
