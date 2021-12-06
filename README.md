@@ -23,8 +23,11 @@ To convert 'report.checkstyle.xml' file to JSON and store the result in 'report.
 
 - `-B, --before BEFORE`  Amount of lines before used for file context fetch (default: 3)
 - `-A, --after AFTER`    Amount of lines after used for file context fetch (default: 3)
+- `-G, --gitlab`         Create a file suitable for the CI/CD-pipeline upload to gitlab.com
 
 ## JSON format
+
+### Standard
 
 ```
 {
@@ -42,3 +45,21 @@ To convert 'report.checkstyle.xml' file to JSON and store the result in 'report.
     ]
 }
 ```
+
+### GitLab format
+
+see https://docs.gitlab.com/ee/user/project/merge_requests/code_quality.html#implementing-a-custom-tool
+
+[
+  {
+    "description": "a description",
+    "fingerprint": "a checksum to (re-)identify issues",
+    "severity": "severity: info, minor, major, critical, or blocker",
+    "location": {
+      "path": "file/with_issue.R",
+      "lines": {
+        "begin": 42
+      }
+    }
+  }
+]
